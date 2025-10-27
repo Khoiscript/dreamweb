@@ -1,0 +1,1664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Plane & Tank Battle - Last Survivor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #00a2ff, 0 0 20px #00a2ff;
+            background: linear-gradient(to right, #ff8a00, #da1b60);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: titleGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes titleGlow {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.3); }
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #aaa;
+            margin-bottom: 20px;
+        }
+
+        .game-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .game-controls {
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            padding: 20px;
+            width: 350px;
+            box-shadow: 0 0 15px rgba(0, 100, 255, 0.5);
+            max-height: 800px;
+            overflow-y: auto;
+        }
+
+        .game-canvas-container {
+            position: relative;
+            width: 1000px;
+            height: 700px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 100, 255, 0.5);
+        }
+
+        canvas {
+            display: block;
+            background: #000;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            color: #4fc3f7;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 10px;
+            background: rgba(30, 30, 60, 0.8);
+            border: 1px solid #444;
+            border-radius: 5px;
+            color: white;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+
+        .player-names-container {
+            margin-bottom: 10px;
+        }
+
+        .player-names {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: rgba(30, 30, 60, 0.5);
+            border-radius: 5px;
+            border: 2px solid #4fc3f7;
+        }
+
+        .player-name-input {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            margin-bottom: 6px;
+            background: rgba(50, 50, 80, 0.6);
+            border-radius: 5px;
+            border-left: 3px solid;
+            transition: all 0.2s;
+        }
+
+        .player-name-input:hover {
+            background: rgba(70, 70, 100, 0.8);
+            transform: translateX(5px);
+        }
+
+        .player-name-input span {
+            color: #4fc3f7;
+            font-size: 0.9rem;
+            font-weight: bold;
+            min-width: 80px;
+            margin-right: 10px;
+        }
+
+        .player-name-input input {
+            flex: 1;
+            margin-bottom: 0;
+            font-size: 0.95rem;
+            padding: 8px;
+            background: rgba(20, 20, 40, 0.8);
+            border: 1px solid #555;
+        }
+
+        .player-name-input input:focus {
+            border-color: #4fc3f7;
+            box-shadow: 0 0 10px rgba(79, 195, 247, 0.3);
+            outline: none;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .start-btn {
+            background: linear-gradient(to right, #00c853, #64dd17);
+            color: white;
+        }
+
+        .reset-btn {
+            background: linear-gradient(to right, #ff3d00, #ff6d00);
+            color: white;
+        }
+
+        .random-btn {
+            background: linear-gradient(to right, #2979ff, #00b0ff);
+            color: white;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 1.1rem;
+        }
+
+        .status {
+            color: #ffeb3b;
+            font-weight: bold;
+        }
+
+        .timer {
+            font-size: 1.3rem;
+            color: #ff4081;
+            font-weight: bold;
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .winner-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.8s;
+        }
+
+        .winner-popup.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .popup-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: 30px;
+            padding: 60px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 0 100px rgba(255, 215, 0, 0.5);
+            border: 3px solid gold;
+            animation: popupEnter 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            max-width: 800px;
+            overflow: hidden;
+        }
+
+        @keyframes popupEnter {
+            0% {
+                transform: scale(0.3) rotate(-10deg);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        .crown-icon {
+            font-size: 8rem;
+            animation: crownBounce 1s ease-in-out infinite;
+            filter: drop-shadow(0 0 30px gold);
+        }
+
+        @keyframes crownBounce {
+            0%, 100% { transform: translateY(0) rotate(-10deg); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+        }
+
+        .winner-title {
+            font-size: 4rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ffd700, #ffed4e, #ffd700);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 2s ease infinite;
+            text-shadow: 0 0 40px rgba(255, 215, 0, 0.8);
+            margin: 20px 0;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .winner-name {
+            font-size: 5rem;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 
+                0 0 10px #4caf50,
+                0 0 20px #4caf50,
+                0 0 30px #4caf50,
+                0 0 40px #4caf50;
+            margin: 30px 0;
+            animation: nameGlow 1.5s ease-in-out infinite;
+        }
+
+        @keyframes nameGlow {
+            0%, 100% { 
+                text-shadow: 
+                    0 0 10px #4caf50,
+                    0 0 20px #4caf50,
+                    0 0 30px #4caf50;
+            }
+            50% { 
+                text-shadow: 
+                    0 0 20px #4caf50,
+                    0 0 40px #4caf50,
+                    0 0 60px #4caf50,
+                    0 0 80px #4caf50;
+            }
+        }
+
+        .winner-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            animation: statBoxEnter 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .stat-box:nth-child(1) { animation-delay: 0.2s; }
+        .stat-box:nth-child(2) { animation-delay: 0.4s; }
+        .stat-box:nth-child(3) { animation-delay: 0.6s; }
+
+        @keyframes statBoxEnter {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stat-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .popup-button {
+            margin-top: 40px;
+            padding: 20px 60px;
+            font-size: 1.5rem;
+            background: linear-gradient(45deg, #ff6b6b, #ee5a6f, #ff6b6b);
+            background-size: 200% 200%;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            animation: buttonPulse 2s ease-in-out infinite;
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.5);
+        }
+
+        @keyframes buttonPulse {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 0 10px 30px rgba(255, 107, 107, 0.5);
+            }
+            50% { 
+                transform: scale(1.05);
+                box-shadow: 0 15px 40px rgba(255, 107, 107, 0.8);
+            }
+        }
+
+        .popup-button:hover {
+            transform: scale(1.1) !important;
+        }
+
+        .firework-particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .confetti-piece {
+            position: absolute;
+            width: 12px;
+            height: 20px;
+            animation: confettiFall linear forwards;
+            pointer-events: none;
+        }
+
+        @keyframes confettiFall {
+            to {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .instructions {
+            margin-top: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .instructions h3 {
+            color: #4fc3f7;
+            margin-bottom: 10px;
+        }
+
+        .instructions p {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .leaderboard {
+            width: 100%;
+            max-width: 1000px;
+            margin-top: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .leaderboard h3 {
+            color: #4fc3f7;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            border-bottom: 1px solid #333;
+            transition: all 0.2s;
+        }
+
+        .leaderboard-item:hover {
+            background: rgba(79, 195, 247, 0.1);
+            transform: translateX(5px);
+        }
+
+        .leaderboard-item:last-child {
+            border-bottom: none;
+        }
+
+        .leaderboard-name {
+            font-weight: bold;
+        }
+
+        .leaderboard-score {
+            color: #ffeb3b;
+        }
+
+        @media (max-width: 1500px) {
+            .game-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .game-controls {
+                width: 100%;
+                max-width: 1000px;
+            }
+        }
+
+        @media (max-width: 1050px) {
+            .game-canvas-container {
+                width: 100%;
+                height: 600px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .game-canvas-container {
+                height: 400px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .winner-name {
+                font-size: 2.5rem;
+            }
+            
+            .winner-stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚔️ SPACE PLANE & TANK BATTLE ⚔️</h1>
+            <div class="subtitle">🏆 LAST SURVIVOR - Battle Royale (Up to 50 Players!) 🏆</div>
+        </header>
+        
+        <div class="game-container">
+            <div class="game-controls">
+                <div class="control-group">
+                    <h2>⚔️ GAME MODE</h2>
+                    <select id="gameMode">
+                        <option value="space">🚀 Space Battle</option>
+                        <option value="tank">🛡️ Tank Battle</option>
+                    </select>
+                    
+                    <label for="gameTime">⏱️ Battle Time (seconds):</label>
+                    <input type="number" id="gameTime" min="30" max="600" value="180">
+                    
+                    <label for="intensityMode">💥 Intensity Mode:</label>
+                    <select id="intensityMode">
+                        <option value="normal">Normal</option>
+                        <option value="intense">Intense Battle</option>
+                        <option value="chaos">Total Chaos</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <h2>👥 PLAYER SETTINGS</h2>
+                    <label for="playerCount">Number of Players (2-50):</label>
+                    <input type="number" id="playerCount" min="2" max="50" value="20">
+                    
+                    <label for="aiDifficulty">🤖 AI Difficulty:</label>
+                    <select id="aiDifficulty">
+                        <option value="normal">Normal</option>
+                        <option value="hard">Hard</option>
+                        <option value="insane">Insane</option>
+                    </select>
+                    
+                    <h3 style="color: #4fc3f7; margin-top: 15px;">📝 Player Names</h3>
+                    <div class="player-names-container">
+                        <div class="player-names" id="playerNames"></div>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <h2>🎮 GAME CONTROLS</h2>
+                    <div class="button-group">
+                        <button class="start-btn" id="startBtn">START BATTLE</button>
+                        <button class="reset-btn" id="resetBtn">RESET</button>
+                    </div>
+                    <button class="random-btn" id="randomBtn" style="width: 100%; margin-top: 10px;">🎲 RANDOMIZE ALL</button>
+                </div>
+                
+                <div class="timer" id="gameTimer">03:00</div>
+                
+                <div class="game-info">
+                    <div>Players Alive: <span id="playersAlive">0</span></div>
+                    <div>Status: <span id="gameStatus" class="status">Idle</span></div>
+                </div>
+            </div>
+            
+            <div class="game-canvas-container">
+                <canvas id="gameCanvas" width="1000" height="700"></canvas>
+            </div>
+        </div>
+        
+        <div class="leaderboard">
+            <h3>🏆 LEADERBOARD 🏆</h3>
+            <div id="leaderboardList">
+                <div style="text-align: center; color: #888; padding: 20px;">Game not started yet</div>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h3>📖 HOW TO PLAY</h3>
+            <p>• Select game mode (Space Battle or Tank Battle) and set battle time</p>
+            <p>• Choose intensity mode and AI difficulty</p>
+            <p>• Set number of players (2-50) and enter player names</p>
+            <p>• Click START BATTLE to begin</p>
+            <p>• <strong>⚔️ DYNAMIC DIFFICULTY - Gets harder over time!</strong></p>
+            <p>• <strong>🎯 Early game: Low damage (5), slow fire rate, wandering around</strong></p>
+            <p>• <strong>💥 Late game: High damage (30), rapid fire, intense chasing!</strong></p>
+            <p>• <strong>🏃 Players chase and dodge each other for intense action!</strong></p>
+            <p>• <strong>⏰ Battle continues until TIME RUNS OUT!</strong></p>
+            <p>• <strong>🏆 Winner = Highest score when timer hits 0:00!</strong></p>
+        </div>
+    </div>
+
+    <div class="winner-popup" id="winnerPopup">
+        <div class="popup-content">
+            <div class="crown-icon">👑</div>
+            <div class="winner-title">VICTORY!</div>
+            <div class="winner-name" id="popupWinnerName">PLAYER #1</div>
+            
+            <div class="winner-stats-grid">
+                <div class="stat-box">
+                    <div class="stat-icon">💀</div>
+                    <div class="stat-label">Kills</div>
+                    <div class="stat-value" id="popupKills">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-icon">❤️</div>
+                    <div class="stat-label">Health</div>
+                    <div class="stat-value" id="popupHealth">100</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-icon">⭐</div>
+                    <div class="stat-label">Score</div>
+                    <div class="stat-value" id="popupScore">0</div>
+                </div>
+            </div>
+            
+            <button class="popup-button" id="popupContinueBtn">PLAY AGAIN</button>
+        </div>
+    </div>
+
+    <script>
+        let canvas, ctx;
+        let gameActive = false;
+        let players = [];
+        let bullets = [];
+        let effects = [];
+        let gameMode = 'space';
+        let playerCount = 20;
+        let aiDifficulty = 'normal';
+        let gameStatus = 'Idle';
+        let lastTime = 0;
+        let stars = [];
+        let gameTime = 180;
+        let timeRemaining = gameTime;
+        let gameTimer = null;
+        let intensityMode = 'normal';
+        let trackOffset = 0;
+        let playerNames = [];
+        let leaderboard = [];
+        let battlePhase = false;
+        
+        const PLAYER_RADIUS = 15;
+        const BULLET_RADIUS = 3;
+        const BULLET_SPEED = 12;
+        const MAX_HEALTH = 100;
+        const ROTATION_SPEED = 0.03;
+        const MOVE_SPEED = 2.5;
+        const AI_DETECTION_RANGE = 400;
+        
+        // DYNAMIC DAMAGE & FIRE RATE - thay đổi theo thời gian còn lại
+        function getDynamicDamage() {
+            const timePercent = timeRemaining / gameTime; // 1.0 = đầu game, 0.0 = cuối game
+            // Đầu game: 5 damage, Cuối game: 30 damage
+            return Math.floor(5 + (25 * (1 - timePercent)));
+        }
+        
+        function getDynamicFireInterval() {
+            const timePercent = timeRemaining / gameTime;
+            // Đầu game: 2000ms (chậm), Cuối game: 300ms (cực nhanh)
+            let baseInterval = 2000 - (1700 * (1 - timePercent));
+            
+            if (aiDifficulty === 'hard') baseInterval *= 0.8;
+            if (aiDifficulty === 'insane') baseInterval *= 0.6;
+            if (intensityMode === 'intense') baseInterval *= 0.85;
+            if (intensityMode === 'chaos') baseInterval *= 0.7;
+            
+            return Math.max(200, baseInterval); // Tối thiểu 200ms
+        }
+        
+        function getAggressionLevel() {
+            const timePercent = timeRemaining / gameTime;
+            // Đầu game: 0.3 (thư thả), Cuối game: 1.0 (cực kỳ aggressive)
+            return 0.3 + (0.7 * (1 - timePercent));
+        }
+        
+        const PLAYER_COLORS = [
+            '#FF5252', '#FF4081', '#E040FB', '#7C4DFF', '#536DFE',
+            '#448AFF', '#40C4FF', '#18FFFF', '#64FFDA', '#69F0AE',
+            '#B2FF59', '#EEFF41', '#FFFF00', '#FFD740', '#FFAB40',
+            '#FF6E40', '#FF1744', '#F50057', '#D500F9', '#651FFF',
+            '#3D5AFE', '#2979FF', '#00B0FF', '#00E5FF', '#1DE9B6',
+            '#00E676', '#76FF03', '#C6FF00', '#FFEA00', '#FFC400',
+            '#FF9100', '#FF3D00', '#BF360C', '#8D6E63', '#78909C',
+            '#546E7A', '#37474F', '#FF80AB', '#EA80FC', '#B388FF',
+            '#8C9EFF', '#82B1FF', '#80D8FF', '#84FFFF', '#A7FFEB',
+            '#B9F6CA', '#CCFF90', '#F4FF81', '#FFE57F', '#FFD180'
+        ];
+        
+        function init() {
+            canvas = document.getElementById('gameCanvas');
+            ctx = canvas.getContext('2d');
+            
+            document.getElementById('startBtn').addEventListener('click', startGame);
+            document.getElementById('resetBtn').addEventListener('click', resetGame);
+            document.getElementById('randomBtn').addEventListener('click', randomizeGame);
+            document.getElementById('gameMode').addEventListener('change', function() {
+                gameMode = this.value;
+                resetGame();
+            });
+            document.getElementById('playerCount').addEventListener('change', function() {
+                playerCount = parseInt(this.value);
+                generatePlayerNameInputs();
+                resetGame();
+            });
+            document.getElementById('aiDifficulty').addEventListener('change', function() {
+                aiDifficulty = this.value;
+            });
+            document.getElementById('gameTime').addEventListener('change', function() {
+                gameTime = parseInt(this.value);
+                timeRemaining = gameTime;
+                updateTimerDisplay();
+            });
+            document.getElementById('intensityMode').addEventListener('change', function() {
+                intensityMode = this.value;
+            });
+            document.getElementById('popupContinueBtn').addEventListener('click', function() {
+                document.getElementById('winnerPopup').classList.remove('show');
+                resetGame();
+            });
+            
+            generatePlayerNameInputs();
+            createStars();
+            resetGame();
+            requestAnimationFrame(gameLoop);
+        }
+        
+        function generatePlayerNameInputs() {
+            const container = document.getElementById('playerNames');
+            container.innerHTML = '';
+            
+            for (let i = 0; i < playerCount; i++) {
+                const nameInput = document.createElement('div');
+                nameInput.className = 'player-name-input';
+                nameInput.style.borderLeftColor = PLAYER_COLORS[i % PLAYER_COLORS.length];
+                nameInput.innerHTML = `
+                    <span>Player ${i+1}:</span>
+                    <input type="text" id="playerName${i}" placeholder="Enter name" maxlength="20">
+                `;
+                container.appendChild(nameInput);
+            }
+        }
+        
+        function getPlayerNames() {
+            const names = [];
+            for (let i = 0; i < playerCount; i++) {
+                const input = document.getElementById(`playerName${i}`);
+                const name = input.value.trim();
+                names.push(name || `Player ${i+1}`);
+            }
+            return names;
+        }
+        
+        function createStars() {
+            stars = [];
+            for (let i = 0; i < 300; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 2,
+                    brightness: Math.random()
+                });
+            }
+        }
+        
+        function startGame() {
+            if (gameActive) return;
+            
+            gameActive = true;
+            battlePhase = true; // BẮN NGAY TỪ ĐẦU
+            gameStatus = 'Battle Royale';
+            timeRemaining = gameTime;
+            updateGameInfo();
+            updateTimerDisplay();
+            
+            playerNames = getPlayerNames();
+            
+            players = [];
+            bullets = [];
+            effects = [];
+            trackOffset = 0;
+            
+            for (let i = 0; i < playerCount; i++) {
+                players.push(createPlayer(i));
+            }
+            
+            clearInterval(gameTimer);
+            gameTimer = setInterval(updateGameTimer, 1000);
+        }
+        
+        function resetGame() {
+            gameActive = false;
+            battlePhase = false;
+            gameStatus = 'Idle';
+            players = [];
+            bullets = [];
+            effects = [];
+            timeRemaining = gameTime;
+            trackOffset = 0;
+            updateGameInfo();
+            updateTimerDisplay();
+            clearInterval(gameTimer);
+            
+            document.getElementById('leaderboardList').innerHTML = '<div style="text-align: center; color: #888; padding: 20px;">Game not started yet</div>';
+            
+            // Tạo players với initial = true để hiển thị ngay
+            playerNames = getPlayerNames();
+            for (let i = 0; i < playerCount; i++) {
+                players.push(createPlayer(i, true));
+            }
+        }
+        
+        function randomizeGame() {
+            playerCount = Math.floor(Math.random() * 49) + 2;
+            document.getElementById('playerCount').value = playerCount;
+            generatePlayerNameInputs();
+            
+            const difficulties = ['normal', 'hard', 'insane'];
+            aiDifficulty = difficulties[Math.floor(Math.random() * 3)];
+            document.getElementById('aiDifficulty').value = aiDifficulty;
+            
+            const modes = ['space', 'tank'];
+            gameMode = modes[Math.floor(Math.random() * 2)];
+            document.getElementById('gameMode').value = gameMode;
+            
+            gameTime = Math.floor(Math.random() * 331) + 30;
+            document.getElementById('gameTime').value = gameTime;
+            timeRemaining = gameTime;
+            updateTimerDisplay();
+            
+            const intensities = ['normal', 'intense', 'chaos'];
+            intensityMode = intensities[Math.floor(Math.random() * 3)];
+            document.getElementById('intensityMode').value = intensityMode;
+            
+            const namePrefixes = [
+                'Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo', 'Foxtrot', 'Gamma', 'Havoc',
+                'Ice', 'Joker', 'King', 'Lima', 'Mike', 'November', 'Oscar', 'Papa',
+                'Quebec', 'Romeo', 'Sierra', 'Tango', 'Uniform', 'Victor', 'Whiskey', 'Xray',
+                'Yankee', 'Zulu', 'Ace', 'Bolt', 'Cobra', 'Dagger', 'Eagle', 'Falcon',
+                'Ghost', 'Hawk', 'Iron', 'Jaguar', 'Kilo', 'Lynx', 'Mamba', 'Ninja',
+                'Onyx', 'Phantom', 'Quick', 'Raven', 'Shadow', 'Tiger', 'Viper', 'Wolf',
+                'Yeti', 'Zeus'
+            ];
+            
+            for (let i = 0; i < playerCount; i++) {
+                const input = document.getElementById(`playerName${i}`);
+                const prefix = namePrefixes[i % namePrefixes.length];
+                input.value = `${prefix}-${Math.floor(Math.random() * 100)}`;
+            }
+            
+            resetGame();
+        }
+        
+        function createPlayer(id, initial = false) {
+            let x, y;
+            
+            if (playerCount <= 20) {
+                const angle = (id / playerCount) * Math.PI * 2;
+                const radius = Math.min(canvas.width, canvas.height) * 0.35;
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+                
+                x = initial ? centerX + Math.cos(angle) * radius : Math.random() * (canvas.width - 100) + 50;
+                y = initial ? centerY + Math.sin(angle) * radius : Math.random() * (canvas.height - 100) + 50;
+            } else {
+                const cols = Math.ceil(Math.sqrt(playerCount));
+                const rows = Math.ceil(playerCount / cols);
+                const cellWidth = canvas.width / cols;
+                const cellHeight = canvas.height / rows;
+                
+                const col = id % cols;
+                const row = Math.floor(id / cols);
+                
+                x = initial ? (col + 0.5) * cellWidth : Math.random() * (canvas.width - 100) + 50;
+                y = initial ? (row + 0.5) * cellHeight : Math.random() * (canvas.height - 100) + 50;
+            }
+            
+            return {
+                id: id,
+                name: playerNames[id] || `Player ${id+1}`,
+                x: x,
+                y: y,
+                rotation: Math.random() * Math.PI * 2,
+                health: MAX_HEALTH,
+                color: PLAYER_COLORS[id % PLAYER_COLORS.length],
+                speed: MOVE_SPEED,
+                lastShot: 0,
+                isAlive: true,
+                kills: 0,
+                score: 0,
+                lastHitBy: null,
+                vx: 0,
+                vy: 0,
+                targetEnemy: null,
+                enemySwitchTime: 0,
+                chaseMode: false,
+                chaseStartTime: 0
+            };
+        }
+        
+        function updateGameTimer() {
+            if (!gameActive) return;
+            
+            timeRemaining--;
+            updateTimerDisplay();
+            
+            // CHỈ END GAME KHI HẾT GIỜ
+            // KHÔNG CHECK SỐ NGƯỜI SỐNG
+            if (timeRemaining <= 0) {
+                endGame();
+            }
+        }
+        
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            document.getElementById('gameTimer').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (timeRemaining <= 10) {
+                document.getElementById('gameTimer').style.color = '#ff5252';
+            } else if (timeRemaining <= 30) {
+                document.getElementById('gameTimer').style.color = '#ff9800';
+            } else {
+                document.getElementById('gameTimer').style.color = '#ff4081';
+            }
+        }
+        
+        function endGame() {
+            gameActive = false;
+            battlePhase = false;
+            clearInterval(gameTimer);
+            gameStatus = 'Finished';
+            updateGameInfo();
+            
+            calculateScores();
+            const winner = determineWinner();
+            
+            showWinnerPopup(winner);
+            updateLeaderboard();
+        }
+        
+        function showWinnerPopup(winner) {
+            const popup = document.getElementById('winnerPopup');
+            
+            document.getElementById('popupWinnerName').textContent = winner.name.toUpperCase();
+            document.getElementById('popupKills').textContent = winner.kills;
+            document.getElementById('popupHealth').textContent = Math.max(0, Math.floor(winner.health));
+            document.getElementById('popupScore').textContent = winner.score;
+            
+            popup.classList.add('show');
+            
+            createConfettiEffect();
+            
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => createFireworksEffect(), i * 300);
+            }
+        }
+        
+        function createConfettiEffect() {
+            const colors = ['#ff0', '#f0f', '#0ff', '#f00', '#0f0', '#00f', '#ff8800', '#ff1493'];
+            
+            for (let i = 0; i < 100; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti-piece';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.top = '-20px';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                    confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => confetti.remove(), 5000);
+                }, i * 20);
+            }
+        }
+        
+        function createFireworksEffect() {
+            const colors = ['#ff0', '#f0f', '#0ff', '#f00', '#0f0', '#00f', '#ff8800'];
+            const x = 20 + Math.random() * 60;
+            const y = 20 + Math.random() * 60;
+            
+            for (let i = 0; i < 40; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'firework-particle';
+                particle.style.left = x + '%';
+                particle.style.top = y + '%';
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                
+                const angle = (i / 40) * Math.PI * 2;
+                const distance = 80 + Math.random() * 60;
+                const tx = Math.cos(angle) * distance;
+                const ty = Math.sin(angle) * distance;
+                
+                particle.style.animation = 'none';
+                document.body.appendChild(particle);
+                
+                setTimeout(() => {
+                    particle.style.transition = 'all 1s ease-out';
+                    particle.style.transform = `translate(${tx}px, ${ty}px)`;
+                    particle.style.opacity = '0';
+                }, 10);
+                
+                setTimeout(() => particle.remove(), 1100);
+            }
+        }
+        
+        function calculateScores() {
+            players.forEach(player => {
+                let score = Math.max(0, player.health);
+                score += player.kills * 50;
+                if (player.isAlive) {
+                    score += 100;
+                }
+                player.score = Math.floor(score);
+            });
+        }
+        
+        function determineWinner() {
+            let highestScore = -1;
+            let winner = null;
+            
+            players.forEach(player => {
+                if (player.score > highestScore) {
+                    highestScore = player.score;
+                    winner = player;
+                }
+            });
+            
+            return winner || players[0];
+        }
+        
+        function updateLeaderboard() {
+            leaderboard = [...players].sort((a, b) => b.score - a.score);
+            
+            const container = document.getElementById('leaderboardList');
+            container.innerHTML = '';
+            
+            const displayCount = Math.min(20, leaderboard.length);
+            for (let i = 0; i < displayCount; i++) {
+                const player = leaderboard[i];
+                const item = document.createElement('div');
+                item.className = 'leaderboard-item';
+                
+                const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
+                const statusIcon = player.isAlive ? '💚' : '💀';
+                
+                item.innerHTML = `
+                    <span class="leaderboard-name">${medal} ${i + 1}. ${player.name} ${statusIcon}</span>
+                    <span class="leaderboard-score">${player.score} pts (${player.kills} kills)</span>
+                `;
+                container.appendChild(item);
+            }
+        }
+        
+        function gameLoop(timestamp) {
+            const deltaTime = timestamp - lastTime;
+            lastTime = timestamp;
+            
+            ctx.fillStyle = gameMode === 'space' ? '#0a0a2a' : '#2a1a0a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            drawBackground();
+            updateEffects();
+            
+            if (gameActive) {
+                updatePlayers(deltaTime);
+                updateBullets(); // BẮN LIÊN TỤC
+            }
+            
+            drawPlayers();
+            drawBullets(); // VẼ ĐẠN
+            drawHUD();
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        function drawBackground() {
+            if (gameMode === 'space') {
+                ctx.fillStyle = 'white';
+                stars.forEach(star => {
+                    ctx.globalAlpha = star.brightness;
+                    ctx.beginPath();
+                    ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    star.brightness = 0.5 + Math.sin(Date.now() * 0.001 + star.x) * 0.5;
+                });
+                ctx.globalAlpha = 1;
+                
+                ctx.fillStyle = 'rgba(100, 100, 200, 0.3)';
+                ctx.beginPath();
+                ctx.arc(canvas.width * 0.2, canvas.height * 0.8, 80, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = 'rgba(200, 100, 100, 0.2)';
+                ctx.beginPath();
+                ctx.arc(canvas.width * 0.8, canvas.height * 0.2, 60, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                drawInfiniteTrack();
+            }
+        }
+        
+        function drawInfiniteTrack() {
+            if (gameActive) {
+                trackOffset += 1;
+                if (trackOffset >= 40) trackOffset = 0;
+            }
+            
+            ctx.fillStyle = '#5d4037';
+            ctx.fillRect(0, canvas.height * 0.7, canvas.width, canvas.height * 0.3);
+            
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([20, 20]);
+            ctx.lineDashOffset = -trackOffset;
+            
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height * 0.85);
+            ctx.lineTo(canvas.width, canvas.height * 0.85);
+            ctx.stroke();
+            
+            ctx.setLineDash([]);
+            
+            ctx.fillStyle = '#4e342e';
+            for (let i = 0; i < 15; i++) {
+                const x = (i / 15) * canvas.width;
+                const height = 20 + Math.sin(i + trackOffset * 0.1) * 10;
+                ctx.fillRect(x, canvas.height * 0.7 - height, canvas.width / 15, height);
+            }
+            
+            ctx.fillStyle = '#795548';
+            ctx.fillRect(canvas.width * 0.3, canvas.height * 0.6, 40, 60);
+            ctx.fillRect(canvas.width * 0.7, canvas.height * 0.5, 50, 80);
+        }
+        
+        function updatePlayers(deltaTime) {
+            const currentTime = Date.now();
+            const aggressionLevel = getAggressionLevel();
+            
+            players.forEach(player => {
+                if (!player.isAlive) return;
+                
+                const friction = 0.92;
+                const acceleration = 0.3;
+                
+                // ĐỔI TARGET THƯỜNG XUYÊN - không focus 1 người
+                const targetSwitchTime = 2000 + (3000 * (timeRemaining / gameTime)); // Đầu: 5s, Cuối: 2s
+                
+                if (!player.targetEnemy || !player.targetEnemy.isAlive || 
+                    currentTime - player.enemySwitchTime > targetSwitchTime) {
+                    player.targetEnemy = findNearestEnemy(player);
+                    player.enemySwitchTime = currentTime;
+                    
+                    // Random chase mode - tăng dần theo thời gian
+                    const chaseChance = 0.2 + (0.6 * (1 - timeRemaining / gameTime));
+                    player.chaseMode = Math.random() < chaseChance;
+                    player.chaseStartTime = currentTime;
+                }
+                
+                if (player.targetEnemy) {
+                    const dx = player.targetEnemy.x - player.x;
+                    const dy = player.targetEnemy.y - player.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const targetAngle = Math.atan2(dy, dx);
+                    
+                    let angleDiff = targetAngle - player.rotation;
+                    while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+                    while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+                    
+                    player.rotation += Math.sign(angleDiff) * Math.min(ROTATION_SPEED * (1 + aggressionLevel), Math.abs(angleDiff));
+                    
+                    let moveTowards = true;
+                    let targetSpeed = player.speed;
+                    
+                    // CHASE MODE - Rượt đuổi kịch tính
+                    if (player.chaseMode && currentTime - player.chaseStartTime < 4000) {
+                        // CHASE: Luôn đuổi theo
+                        moveTowards = true;
+                        targetSpeed *= (1.3 + aggressionLevel * 0.5); // Chạy nhanh hơn
+                        
+                        // Target cũng chạy trốn
+                        if (distance < 200) {
+                            // Target đang bị chase gần
+                            const targetPlayer = player.targetEnemy;
+                            if (targetPlayer.isAlive) {
+                                targetPlayer.chaseMode = false; // Chạy trốn
+                            }
+                        }
+                    } else {
+                        // NORMAL MODE - Đi lượn nhiều ở đầu game
+                        if (distance < 150) {
+                            moveTowards = false;
+                            targetSpeed *= 0.7;
+                        } else if (distance > 350) {
+                            moveTowards = true;
+                            targetSpeed *= (0.8 + aggressionLevel * 0.4);
+                        } else {
+                            // Ở đầu game: đi lượn nhiều hơn
+                            moveTowards = Math.random() < aggressionLevel;
+                            targetSpeed *= (0.6 + aggressionLevel * 0.5);
+                        }
+                    }
+                    
+                    const targetVx = Math.cos(player.rotation) * targetSpeed * (moveTowards ? 1 : -1);
+                    const targetVy = Math.sin(player.rotation) * targetSpeed * (moveTowards ? 1 : -1);
+                    
+                    player.vx = player.vx * friction + targetVx * acceleration;
+                    player.vy = player.vy * friction + targetVy * acceleration;
+                    
+                    // BẮN DYNAMIC - chậm ở đầu, nhanh ở cuối
+                    if (distance < AI_DETECTION_RANGE && Math.abs(angleDiff) < Math.PI / 5) {
+                        const timeSinceShot = currentTime - player.lastShot;
+                        const fireInterval = getDynamicFireInterval();
+                        
+                        if (timeSinceShot > fireInterval) {
+                            fireBullet(player);
+                            player.lastShot = currentTime;
+                        }
+                    }
+                } else {
+                    // Không có target - đi lượn tìm kiếm
+                    player.rotation += (Math.random() - 0.5) * 0.06;
+                    const targetVx = Math.cos(player.rotation) * player.speed * 0.7;
+                    const targetVy = Math.sin(player.rotation) * player.speed * 0.7;
+                    player.vx = player.vx * friction + targetVx * acceleration;
+                    player.vy = player.vy * friction + targetVy * acceleration;
+                }
+                
+                // Apply velocity
+                player.x += player.vx;
+                player.y += player.vy;
+                
+                // Smooth boundary collision
+                const bounce = 0.6;
+                if (player.x < PLAYER_RADIUS) {
+                    player.x = PLAYER_RADIUS;
+                    player.vx = Math.abs(player.vx) * bounce;
+                    player.rotation = -player.rotation + Math.PI;
+                }
+                if (player.x > canvas.width - PLAYER_RADIUS) {
+                    player.x = canvas.width - PLAYER_RADIUS;
+                    player.vx = -Math.abs(player.vx) * bounce;
+                    player.rotation = -player.rotation + Math.PI;
+                }
+                if (player.y < PLAYER_RADIUS) {
+                    player.y = PLAYER_RADIUS;
+                    player.vy = Math.abs(player.vy) * bounce;
+                    player.rotation = -player.rotation;
+                }
+                if (player.y > canvas.height - PLAYER_RADIUS) {
+                    player.y = canvas.height - PLAYER_RADIUS;
+                    player.vy = -Math.abs(player.vy) * bounce;
+                    player.rotation = -player.rotation;
+                }
+                
+                // Engine effects
+                if (Math.random() < 0.1) {
+                    createEngineEffect(player);
+                }
+            });
+        }
+        
+        function findNearestEnemy(player) {
+            let nearest = null;
+            let minDistance = Infinity;
+            
+            players.forEach(other => {
+                if (other.id !== player.id && other.isAlive) {
+                    const dx = other.x - player.x;
+                    const dy = other.y - player.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        nearest = other;
+                    }
+                }
+            });
+            
+            return nearest;
+        }
+        
+        function fireBullet(player) {
+            bullets.push({
+                x: player.x + Math.cos(player.rotation) * PLAYER_RADIUS,
+                y: player.y + Math.sin(player.rotation) * PLAYER_RADIUS,
+                rotation: player.rotation,
+                speed: BULLET_SPEED,
+                playerId: player.id,
+                color: player.color
+            });
+            
+            createMuzzleFlashEffect(player);
+        }
+        
+        function updateBullets() {
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                const bullet = bullets[i];
+                
+                bullet.x += Math.cos(bullet.rotation) * bullet.speed;
+                bullet.y += Math.sin(bullet.rotation) * bullet.speed;
+                
+                if (bullet.x < -BULLET_RADIUS || bullet.x > canvas.width + BULLET_RADIUS ||
+                    bullet.y < -BULLET_RADIUS || bullet.y > canvas.height + BULLET_RADIUS) {
+                    bullets.splice(i, 1);
+                    continue;
+                }
+                
+                for (let j = 0; j < players.length; j++) {
+                    const player = players[j];
+                    
+                    if (player.isAlive && player.id !== bullet.playerId) {
+                        const dx = player.x - bullet.x;
+                        const dy = player.y - bullet.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance < PLAYER_RADIUS + BULLET_RADIUS) {
+                            // DYNAMIC DAMAGE - tăng dần theo thời gian
+                            const damage = getDynamicDamage();
+                            player.health -= damage;
+                            player.lastHitBy = bullet.playerId;
+                            
+                            createHitEffect(bullet.x, bullet.y);
+                            
+                            bullets.splice(i, 1);
+                            
+                            if (player.health <= 0) {
+                                player.isAlive = false;
+                                player.health = 0;
+                                createExplosionEffect(player.x, player.y, player.color);
+                                
+                                const shooter = players.find(p => p.id === bullet.playerId);
+                                if (shooter) {
+                                    shooter.kills++;
+                                }
+                                
+                                updateGameInfo();
+                            }
+                            
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        
+        function drawPlayers() {
+            players.forEach(player => {
+                if (!player.isAlive) return;
+                
+                ctx.save();
+                ctx.translate(player.x, player.y);
+                ctx.rotate(player.rotation);
+                
+                if (gameMode === 'space') {
+                    ctx.shadowColor = player.color;
+                    ctx.shadowBlur = 12;
+                    
+                    ctx.fillStyle = player.color;
+                    ctx.beginPath();
+                    ctx.moveTo(PLAYER_RADIUS, 0);
+                    ctx.lineTo(-PLAYER_RADIUS * 0.7, -PLAYER_RADIUS * 0.7);
+                    ctx.lineTo(-PLAYER_RADIUS * 0.7, PLAYER_RADIUS * 0.7);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    ctx.shadowBlur = 0;
+                    
+                    if (playerCount <= 30) {
+                        ctx.fillStyle = '#4fc3f7';
+                        ctx.beginPath();
+                        ctx.arc(PLAYER_RADIUS * 0.3, 0, PLAYER_RADIUS * 0.4, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                } else {
+                    ctx.shadowColor = player.color;
+                    ctx.shadowBlur = 10;
+                    
+                    ctx.fillStyle = player.color;
+                    ctx.fillRect(-PLAYER_RADIUS * 0.8, -PLAYER_RADIUS * 0.5, PLAYER_RADIUS * 1.6, PLAYER_RADIUS);
+                    
+                    ctx.shadowBlur = 0;
+                    
+                    if (playerCount <= 30) {
+                        ctx.fillStyle = '#555';
+                        ctx.fillRect(0, -PLAYER_RADIUS * 0.3, PLAYER_RADIUS * 1.2, PLAYER_RADIUS * 0.6);
+                        ctx.fillRect(PLAYER_RADIUS * 1.2, -PLAYER_RADIUS * 0.15, PLAYER_RADIUS * 0.8, PLAYER_RADIUS * 0.3);
+                    }
+                }
+                
+                if (playerCount <= 35) {
+                    ctx.rotate(-player.rotation);
+                    const healthWidth = PLAYER_RADIUS * 2.5;
+                    const healthHeight = 5;
+                    
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+                    ctx.fillRect(-healthWidth / 2, -PLAYER_RADIUS - 10, healthWidth, healthHeight);
+                    
+                    ctx.fillStyle = player.health > 50 ? '#4caf50' : player.health > 25 ? '#ff9800' : '#f44336';
+                    ctx.fillRect(-healthWidth / 2, -PLAYER_RADIUS - 10, healthWidth * (player.health / MAX_HEALTH), healthHeight);
+                    
+                    ctx.fillStyle = 'white';
+                    ctx.strokeStyle = 'black';
+                    ctx.lineWidth = 3;
+                    ctx.font = 'bold 11px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.strokeText(player.name, 0, -PLAYER_RADIUS - 15);
+                    ctx.fillText(player.name, 0, -PLAYER_RADIUS - 15);
+                }
+                
+                ctx.restore();
+            });
+        }
+        
+        function drawBullets() {
+            bullets.forEach(bullet => {
+                if (gameMode === 'space') {
+                    ctx.shadowColor = bullet.color;
+                    ctx.shadowBlur = 12;
+                    
+                    ctx.strokeStyle = bullet.color;
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(bullet.x, bullet.y);
+                    ctx.lineTo(
+                        bullet.x - Math.cos(bullet.rotation) * 15,
+                        bullet.y - Math.sin(bullet.rotation) * 15
+                    );
+                    ctx.stroke();
+                    
+                    ctx.shadowBlur = 0;
+                } else {
+                    ctx.shadowColor = '#ff9800';
+                    ctx.shadowBlur = 10;
+                    
+                    ctx.fillStyle = '#ff9800';
+                    ctx.beginPath();
+                    ctx.arc(bullet.x, bullet.y, BULLET_RADIUS * 1.5, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.shadowBlur = 0;
+                }
+            });
+        }
+        
+        function createEngineEffect(player) {
+            const offsetX = -Math.cos(player.rotation) * PLAYER_RADIUS * 0.8;
+            const offsetY = -Math.sin(player.rotation) * PLAYER_RADIUS * 0.8;
+            
+            effects.push({
+                x: player.x + offsetX,
+                y: player.y + offsetY,
+                size: Math.random() * 5 + 2,
+                color: gameMode === 'space' ? '#4fc3f7' : '#ff9800',
+                life: 1,
+                maxLife: 1,
+                type: 'engine',
+                vx: -Math.cos(player.rotation) * 2 + (Math.random() - 0.5),
+                vy: -Math.sin(player.rotation) * 2 + (Math.random() - 0.5)
+            });
+        }
+        
+        function createMuzzleFlashEffect(player) {
+            if (playerCount > 30) return;
+            
+            const offsetX = Math.cos(player.rotation) * PLAYER_RADIUS * 1.2;
+            const offsetY = Math.sin(player.rotation) * PLAYER_RADIUS * 1.2;
+            
+            effects.push({
+                x: player.x + offsetX,
+                y: player.y + offsetY,
+                size: 15,
+                color: '#ffff00',
+                life: 1,
+                maxLife: 1,
+                type: 'muzzle'
+            });
+        }
+        
+        function createHitEffect(x, y) {
+            const particleCount = playerCount > 30 ? 5 : 8;
+            for (let i = 0; i < particleCount; i++) {
+                effects.push({
+                    x: x,
+                    y: y,
+                    size: Math.random() * 4 + 2,
+                    color: '#ff5252',
+                    life: 1,
+                    maxLife: 1,
+                    vx: (Math.random() - 0.5) * 6,
+                    vy: (Math.random() - 0.5) * 6,
+                    type: 'hit'
+                });
+            }
+        }
+        
+        function createExplosionEffect(x, y, color) {
+            const particleCount = playerCount > 30 ? 15 : 25;
+            for (let i = 0; i < particleCount; i++) {
+                effects.push({
+                    x: x,
+                    y: y,
+                    size: Math.random() * 8 + 3,
+                    color: color,
+                    life: 1,
+                    maxLife: 1,
+                    vx: (Math.random() - 0.5) * 10,
+                    vy: (Math.random() - 0.5) * 10,
+                    type: 'explosion'
+                });
+            }
+            
+            if (playerCount <= 30) {
+                effects.push({
+                    x: x,
+                    y: y,
+                    size: 5,
+                    color: '#ff9800',
+                    life: 1,
+                    maxLife: 1,
+                    type: 'shockwave'
+                });
+            }
+        }
+        
+        function updateEffects() {
+            for (let i = effects.length - 1; i >= 0; i--) {
+                const effect = effects[i];
+                
+                if (effect.vx !== undefined) {
+                    effect.x += effect.vx;
+                    effect.y += effect.vy;
+                    effect.vx *= 0.94;
+                    effect.vy *= 0.94;
+                }
+                
+                effect.life -= 1 / 20;
+                
+                if (effect.life <= 0) {
+                    effects.splice(i, 1);
+                    continue;
+                }
+                
+                const alpha = effect.life / effect.maxLife;
+                
+                if (effect.type === 'shockwave') {
+                    ctx.strokeStyle = effect.color;
+                    ctx.globalAlpha = alpha;
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.arc(effect.x, effect.y, effect.size * (1 - effect.life) * 15, 0, Math.PI * 2);
+                    ctx.stroke();
+                } else {
+                    ctx.fillStyle = effect.color;
+                    ctx.globalAlpha = alpha;
+                    ctx.shadowColor = effect.color;
+                    ctx.shadowBlur = 8;
+                    ctx.beginPath();
+                    ctx.arc(effect.x, effect.y, effect.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+                
+                ctx.globalAlpha = 1;
+            }
+        }
+        
+        function drawHUD() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(5, 5, 280, 150);
+            ctx.fillRect(canvas.width - 305, 5, 300, 95);
+            
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 18px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText(gameMode === 'space' ? '🚀 SPACE BATTLE' : '🛡️ TANK BATTLE', 15, 30);
+            
+            ctx.font = '16px Arial';
+            const aliveCount = players.filter(p => p.isAlive).length;
+            ctx.fillText(`Players Alive: ${aliveCount}/${playerCount}`, 15, 55);
+            ctx.fillText(`Status: ${gameStatus}`, 15, 80);
+            ctx.fillText(`Intensity: ${intensityMode.toUpperCase()}`, 15, 105);
+            ctx.fillText(`AI: ${aiDifficulty.toUpperCase()}`, 15, 130);
+            
+            // Hiển thị battle status với intensity
+            if (gameActive) {
+                const aggression = Math.floor(getAggressionLevel() * 100);
+                const currentDamage = getDynamicDamage();
+                ctx.fillStyle = aggression > 70 ? '#ff5252' : aggression > 40 ? '#ff9800' : '#4fc3f7';
+                ctx.font = 'bold 14px Arial';
+                ctx.fillText(`⚔️ Intensity: ${aggression}% | DMG: ${currentDamage}`, 15, 155);
+            }
+            
+            ctx.textAlign = 'right';
+            ctx.font = 'bold 20px Arial';
+            ctx.fillStyle = 'white';
+            ctx.fillText(`Time: ${Math.floor(timeRemaining / 60)}:${(timeRemaining % 60).toString().padStart(2, '0')}`, canvas.width - 15, 30);
+            
+            const leader = getLeader();
+            if (leader) {
+                ctx.font = '16px Arial';
+                ctx.fillStyle = '#ffeb3b';
+                ctx.fillText(`👑 Leader: ${leader.name}`, canvas.width - 15, 60);
+                ctx.fillStyle = 'white';
+                ctx.fillText(`💀 Kills: ${leader.kills}`, canvas.width - 15, 85);
+            }
+        }
+        
+        function getLeader() {
+            let leader = null;
+            let maxKills = -1;
+            
+            players.forEach(player => {
+                if (player.isAlive && player.kills > maxKills) {
+                    maxKills = player.kills;
+                    leader = player;
+                }
+            });
+            
+            return leader;
+        }
+        
+        function updateGameInfo() {
+            const aliveCount = players.filter(p => p.isAlive).length;
+            document.getElementById('playersAlive').textContent = aliveCount;
+            document.getElementById('gameStatus').textContent = gameStatus;
+        }
+        
+        window.onload = init;
+    </script>
+</body>
+</html>
